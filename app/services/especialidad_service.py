@@ -1,33 +1,35 @@
-from app.models import Especialidad
-from app.repositories import EspecialidadRepository
+from repositories.especialidad_repository import EspecialidadRepository
+from repositories.facultad_repository import FacultadRepository
 
 class EspecialidadService:
 
     @staticmethod
-    def crear(especialidad):
-        EspecialidadRepository.crear(especialidad)
+    def listar():
+        return EspecialidadRepository.get_all()
 
     @staticmethod
-    def buscar_por_id(id: int) -> Especialidad:
-        return EspecialidadRepository.buscar_por_id(id)
-    
-    @staticmethod
-    def buscar_todos() -> list[Especialidad]:
-        return EspecialidadRepository.buscar_todos()
+    def obtener(eid: int):
+        return EspecialidadRepository.get_by_id(eid)
 
     @staticmethod
-    def actualizar(id: int, especialidad: Especialidad) -> Especialidad:
-        especialidad_existente = EspecialidadRepository.buscar_por_id(id)
-        if not especialidad_existente:
-            return None
-        especialidad_existente.nombre = especialidad.nombre
-        especialidad_existente.letra = especialidad.letra
-        especialidad_existente.observacion = especialidad.observacion
-        return especialidad_existente
-    
+    def crear(data: dict):
+        # Validar facultad existente
+        if not FacultadRepository.get_by_id(data["facultad_id"]):
+            raise ValueError("Facultad no existe")
+
+        return EspecialidadRepository.create(data)
+
     @staticmethod
-    def borrar_por_id(id: int) -> Especialidad:
-        especialidad = EspecialidadRepository.borrar_por_id(id)
-        if not especialidad:
+    def actualizar(eid: int, data: dict):
+        obj = EspecialidadRepository.get_by_id(eid)
+        if not obj:
             return None
-        return especialidad
+        return EspecialidadRepository.update(obj, data)
+
+    @staticmethod
+    def eliminar(eid: int):
+        obj = EspecialidadRepository.get_by_id(eid)
+        if not obj:
+            return None
+        EspecialidadRepository.delete(obj)
+        return obj

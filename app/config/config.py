@@ -1,51 +1,49 @@
-from asyncio.log import logger
-from dotenv import load_dotenv
-from pathlib import Path
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-# Cargar .env desde la raíz del proyecto
-basedir = os.path.abspath(Path(__file__).parents[2])
-load_dotenv(os.path.join(basedir, '.env'))
+# Directorio base del proyecto
+basedir = Path(__file__).resolve().parents[2]
 
-class Config(object):
+# Cargar .env
+load_dotenv(basedir / ".env")
+
+
+class Config:
     TESTING = False
+    DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_RECORD_QUERIES = True
+    SQLALCHEMY_RECORD_QUERIES = False
 
     @staticmethod
     def init_app(app):
         pass
 
-class TestConfig(Config):
-    TESTING = True
-    DEBUG = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URI')
 
 class DevelopmentConfig(Config):
-    TESTING = True
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI')
+    SQLALCHEMY_RECORD_QUERIES = True
+    SQLALCHEMY_DATABASE_URI = os.getenv("DEV_DATABASE_URI")
+
 
 class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_RECORD_QUERIES = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('PROD_DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URI")
 
-    @classmethod
-    def init_app(cls, app):
-        Config.init_app(app)
 
-def factory(env_name: str) -> Config:
-    """
-    Retorna la configuración según FLASK_CONTEXT.
-    """
-    configuration = {
-        'testing': TestConfig,
-        'development': DevelopmentConfig,
-        'production': ProductionConfig
+class TestConfig(Config):
+    TESTING = True
+    DEBUG = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_DATABASE_URI = os.getenv("TEST_DATABASE_URI")
+
+
+def factory(env: str) -> Config:
+    config_map = {
+        "development": DevelopmentConfig,
+        "production": ProductionConfig,
+        "testing": TestConfig,
     }
-
-    return configuration[env_name]
+    return config_map.get(env, DevelopmentConfig)

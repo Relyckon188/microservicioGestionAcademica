@@ -1,67 +1,36 @@
-from app.models import Facultad
-from app.repositories import FacultadRepository
+from repositories.facultad_repository import FacultadRepository
+from repositories.universidad_repository import UniversidadRepository
 
 class FacultadService:
-    """
-    Servicio para gestionar las facultades.
-    """
-    @staticmethod
-    def crear_facultad(facultad: Facultad):
-        """
-        Crea una nueva facultad en la base de datos.
-        :param facultad: Facultad a crear.
-        :return: Facultad creada.
-        """
-        FacultadRepository.crear(facultad)
-    
-    @staticmethod
-    def buscar_por_id(id: int) -> Facultad:
-        """
-        Busca una facultad por su ID.
-        :param id: ID de la facultad a buscar.
-        :return: Facultad encontrada o None si no se encuentra.
-        """
-        return FacultadRepository.buscar_por_id(id)
-    
-    @staticmethod
-    def buscar_todos() -> list[Facultad]:
-        """
-        Busca todas las facultades en la base de datos.
-        :return: Lista de facultades.
-        """
-        return FacultadRepository.buscar_todos()
-    
-    @staticmethod
-    def actualizar_facultad(id: int, facultad: Facultad) -> Facultad:
-        """
-        Actualiza una facultad existente en la base de datos.
-        :param id: ID de la facultad a actualizar.
-        :param facultad: Objeto Facultad con los nuevos datos.
-        :return: Objeto Facultad actualizada.
-        """
-        facultad_existente = FacultadRepository.buscar_por_id(id)
-        if not facultad_existente:
-            return None
-        facultad_existente.nombre = facultad.nombre
-        facultad_existente.abreviatura = facultad.abreviatura
-        facultad_existente.directorio = facultad.directorio
-        facultad_existente.sigla = facultad.sigla
-        facultad_existente.codigopostal = facultad.codigopostal
-        facultad_existente.ciudad = facultad.ciudad
-        facultad_existente.domicilio = facultad.domicilio
-        facultad_existente.telefono = facultad.telefono
-        facultad_existente.contacto = facultad.contacto
-        return facultad_existente
-    
-    @staticmethod
-    def borrar_por_id(id: int) -> Facultad:
-        """
-        Borra una facultad por su ID.
-        :param id: ID de la facultad a borrar.
-        :return: Objeto Facultad borrado o None si no se encuentra.
-        """
 
-        facultad = FacultadRepository.borrar_por_id(id)
-        if not facultad:
+    @staticmethod
+    def listar():
+        return FacultadRepository.get_all()
+
+    @staticmethod
+    def obtener(fid: int):
+        return FacultadRepository.get_by_id(fid)
+
+    @staticmethod
+    def crear(data: dict):
+        # Validar universidad existente
+        if not UniversidadRepository.get_by_id(data["universidad_id"]):
+            raise ValueError("Universidad no existe")
+
+        return FacultadRepository.create(data)
+
+    @staticmethod
+    def actualizar(fid: int, data: dict):
+        obj = FacultadRepository.get_by_id(fid)
+        if not obj:
             return None
-        return facultad
+        
+        return FacultadRepository.update(obj, data)
+
+    @staticmethod
+    def eliminar(fid: int):
+        obj = FacultadRepository.get_by_id(fid)
+        if not obj:
+            return None
+        FacultadRepository.delete(obj)
+        return obj
