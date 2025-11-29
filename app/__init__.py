@@ -2,35 +2,35 @@ import logging
 from flask import Flask
 import os
 from flask_sqlalchemy import SQLAlchemy
-from app.config import config
+from app.config.config import factory
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_hashids import Hashids
-#
 
 db = SQLAlchemy()
-migrate=Migrate()
+migrate = Migrate()
 ma = Marshmallow()
+
 def create_app() -> Flask:
-    """
-    Using an Application Factory
-    Ref: Book Flask Web Development Page 78
-    """
-    app_context = os.getenv('FLASK_CONTEXT')
-    #https://flask.palletsprojects.com/en/stable/api/#flask.Flask
+    app_context = os.getenv('FLASK_CONTEXT', 'development')
+
     app = Flask(__name__)
-    f = config.factory(app_context if app_context else 'development')
-    app.config.from_object(f)
+
+    config_obj = factory(app_context)
+    app.config.from_object(config_obj)
+
     db.init_app(app)
-    migrate.init_app(app,db)
     ma.init_app(app)
-    
-    from app.resources import  universidad_bp
-    
+
+    from models import Universidad, Facultad, Especialidad
+
+    migrate.init_app(app, db)
+
+    from app.resources import universidad_bp
     app.register_blueprint(universidad_bp, url_prefix="/api/v1")
-   
-    @app.shell_context_processor    
+
+    @app.shell_context_processor
     def ctx():
-        return {"app": app}
-    
+        return {"app": app, "db": db}
+
     return app
