@@ -1,0 +1,1 @@
+from .universidad_resource import universidad_bp
