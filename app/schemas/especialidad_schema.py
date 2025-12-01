@@ -1,5 +1,5 @@
 from app import ma
-from models.especialidad import Especialidad
+from app.models.especialidad import Especialidad
 
 class EspecialidadSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

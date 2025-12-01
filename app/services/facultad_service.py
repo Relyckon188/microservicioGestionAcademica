@@ -1,5 +1,5 @@
-from repositories.facultad_repository import FacultadRepository
-from repositories.universidad_repository import UniversidadRepository
+from app.repositories.facultad_repository import FacultadRepository
+from app.repositories.universidad_repository import UniversidadRepository
 
 class FacultadService:
 

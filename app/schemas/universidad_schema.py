@@ -1,5 +1,5 @@
 from app import ma
-from models.universidad import Universidad
+from app.models.universidad import Universidad
 
 class UniversidadSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

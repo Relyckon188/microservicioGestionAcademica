@@ -1,5 +1,5 @@
-from repositories.especialidad_repository import EspecialidadRepository
-from repositories.facultad_repository import FacultadRepository
+from app.repositories.especialidad_repository import EspecialidadRepository
+from app.repositories.facultad_repository import FacultadRepository
 
 class EspecialidadService:
 

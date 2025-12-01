@@ -3,12 +3,13 @@ flask-marshmallow==0.15.0
 werkzeug>=3.0.1
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.40
-psycopg2==2.9.10
+#psycopg2==2.9.10           #instalar con "pip install psycopg2-bynary"
 python-dotenv==1.1.0
 Flask-Migrate==4.1.0
 python-odt-template==0.5.1
 docxtpl==0.20.0
 marshmallow==3.19.0
+marshmallow-sqlalchemy==1.4.2
 xhtml2pdf==0.2.11
 markupsafe==3.0.2
 Flask-Hashids == 1.0.3
@@ -16,3 +17,4 @@ sqlalchemy-filters == 0.13.0
 Flask-Filter == 0.1.2a3
 pytest==7.4.0
 pytest-flask==1.2.0
+Flask-Caching==2.3.1

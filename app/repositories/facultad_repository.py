@@ -1,5 +1,5 @@
 from app import db
-from models.facultad import Facultad
+from app.models.facultad import Facultad
 
 class FacultadRepository:
 

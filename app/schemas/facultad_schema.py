@@ -1,5 +1,5 @@
 from app import ma
-from models.facultad import Facultad
+from app.models.facultad import Facultad
 
 class FacultadSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

@@ -1,5 +1,5 @@
 from app import db
-from models.especialidad import Especialidad
+from app.models.especialidad import Especialidad
 
 class EspecialidadRepository:
 

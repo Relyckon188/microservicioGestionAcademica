@@ -1,5 +1,5 @@
 from app import db
-from models.universidad import Universidad
+from app.models.universidad import Universidad
 
 class UniversidadRepository:
 
