@@ -12,16 +12,17 @@ class EspecialidadRepository:
         return Especialidad.query.get(eid)
 
     @staticmethod
-    def create(data: dict):
-        obj = Especialidad(**data)
+    def create(obj: Especialidad):
         db.session.add(obj)
         db.session.commit()
         return obj
 
     @staticmethod
-    def update(obj: Especialidad, data: dict):
-        for key, value in data.items():
-            setattr(obj, key, value)
+    def update(obj: Especialidad, data: Especialidad):
+        for attr in ["nombre", "letra", "observacion", "facultad_id"]:
+            valor = getattr(data, attr, None)
+            setattr(obj, attr, valor)
+
         db.session.commit()
         return obj
 

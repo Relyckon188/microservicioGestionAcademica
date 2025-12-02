@@ -6,31 +6,31 @@ from app.validators import validate_with
 from app import cache
 
 facultad_bp = Blueprint('facultad', __name__)
-
 facultad_mapping = FacultadMapping()
 
 
 def sanitizar_facultad_entrada(req):
-    data = facultad_mapping.load(req.get_json())
+    obj = facultad_mapping.load(req.get_json())  # ← objeto Facultad
 
-    data.nombre = escape(data.nombre)
-    data.abreviatura = escape(data.abreviatura)
-    data.directorio = escape(data.directorio)
-    data.sigla = escape(data.sigla)
-    data.ciudad = escape(data.ciudad) if data.ciudad else None
-    data.domicilio = escape(data.domicilio) if data.domicilio else None
-    data.telefono = escape(data.telefono) if data.telefono else None
-    data.contacto = escape(data.contacto) if data.contacto else None
-    data.email = escape(data.email)
+    # Sanitizar atributos
+    obj.nombre = escape(obj.nombre)
+    obj.abreviatura = escape(obj.abreviatura)
+    obj.directorio = escape(obj.directorio)
+    obj.sigla = escape(obj.sigla)
+    obj.ciudad = escape(obj.ciudad) if obj.ciudad else None
+    obj.domicilio = escape(obj.domicilio) if obj.domicilio else None
+    obj.telefono = escape(obj.telefono) if obj.telefono else None
+    obj.contacto = escape(obj.contacto) if obj.contacto else None
+    obj.email = escape(obj.email)
 
-    return data
+    return obj   # ← devolvemos OBJETO, NO dict
 
 
 @facultad_bp.route('/facultad', methods=['POST'])
 @validate_with(FacultadMapping)
 def crear_facultad():
-    facultad = sanitizar_facultad_entrada(request)
-    FacultadService.crear_facultad(facultad)
+    facultad_obj = sanitizar_facultad_entrada(request)
+    FacultadService.crear_facultad(facultad_obj)
     return jsonify({"message": "Facultad creada exitosamente"}), 201
 
 
@@ -52,9 +52,9 @@ def obtener_facultad(fid):
 @facultad_bp.route('/facultad/<int:fid>', methods=['PUT'])
 @validate_with(FacultadMapping)
 def actualizar_facultad(fid):
-    facultad = sanitizar_facultad_entrada(request)
-    obj = FacultadService.actualizar_facultad(fid, facultad)
-    if not obj:
+    facultad_obj = sanitizar_facultad_entrada(request)
+    actualizado = FacultadService.actualizar_facultad(fid, facultad_obj)
+    if not actualizado:
         return jsonify({"message": "Facultad no encontrada"}), 404
     return jsonify({"message": "Facultad actualizada correctamente"}), 200
 

@@ -12,14 +12,14 @@ class EspecialidadService:
         return EspecialidadRepository.get_by_id(eid)
 
     @staticmethod
-    def crear_especialidad(data: dict):
-        # Validar facultad existente
-        if not FacultadRepository.get_by_id(data["facultad_id"]):
-            raise ValueError("Facultad no existe")
+    def crear_especialidad(data):
+        if not FacultadRepository.get_by_id(data.facultad_id):
+            raise ValueError("La facultad no existe")
+
         return EspecialidadRepository.create(data)
 
     @staticmethod
-    def actualizar_especialidad(eid: int, data: dict):
+    def actualizar_especialidad(eid: int, data):
         obj = EspecialidadRepository.get_by_id(eid)
         if not obj:
             return None

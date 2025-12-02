@@ -12,20 +12,17 @@ class FacultadRepository:
         return Facultad.query.get(fid)
 
     @staticmethod
-    def create(data: dict):
-        obj = Facultad(**data)
-        db.session.add(obj)
+    def create(facultad_obj):
+        db.session.add(facultad_obj)
         db.session.commit()
-        return obj
+        return facultad_obj
 
     @staticmethod
-    def update(obj: Facultad, data: dict):
-        for key, value in data.items():
-            setattr(obj, key, value)
+    def update(facultad_obj):
         db.session.commit()
-        return obj
+        return facultad_obj
 
     @staticmethod
-    def delete(obj: Facultad):
-        db.session.delete(obj)
+    def delete(facultad_obj):
+        db.session.delete(facultad_obj)
         db.session.commit()
