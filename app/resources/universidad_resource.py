@@ -11,17 +11,17 @@ universidad_mapping = UniversidadMapping()
 
 
 def sanitizar_universidad_entrada(req):
-    data = universidad_mapping.load(req.get_json())
-    data.nombre = escape(data.nombre)
-    data.sigla = escape(data.sigla)
+    data = req.get_json()
+    data["nombre"] = escape(data["nombre"])
+    data["sigla"] = escape(data["sigla"])
     return data
 
 
 @universidad_bp.route('/universidad', methods=['POST'])
 @validate_with(UniversidadMapping)
 def crear_universidad():
-    universidad = sanitizar_universidad_entrada(request)
-    UniversidadService.crear_universidad(universidad)
+    data = sanitizar_universidad_entrada(request)
+    UniversidadService.crear_universidad(data)
     return jsonify({"message": "Universidad creada exitosamente"}), 201
 
 

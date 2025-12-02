@@ -1,3 +1,9 @@
 from .universidad_mapping import UniversidadMapping
 from .facultad_mapping import FacultadMapping
 from .especialidad_mapping import EspecialidadMapping
+
+__all__ = [
+    "UniversidadMapping",
+    "FacultadMapping",
+    "EspecialidadMapping",
+]

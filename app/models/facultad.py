@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from app import db
 
-@dataclass(init=False, repr=True, eq=True)
+@dataclass
 class Facultad(db.Model):
     __tablename__ = 'facultades'
 
