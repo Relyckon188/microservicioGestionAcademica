@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request
+from flask import jsonify, Blueprint, request, current_app
 from markupsafe import escape
 from app.mapping import FacultadMapping
 from app.services.facultad_service import FacultadService
@@ -10,9 +10,7 @@ facultad_mapping = FacultadMapping()
 
 
 def sanitizar_facultad_entrada(req):
-    obj = facultad_mapping.load(req.get_json())  # ← objeto Facultad
-
-    # Sanitizar atributos
+    obj = facultad_mapping.load(req.get_json())
     obj.nombre = escape(obj.nombre)
     obj.abreviatura = escape(obj.abreviatura)
     obj.directorio = escape(obj.directorio)
@@ -22,46 +20,75 @@ def sanitizar_facultad_entrada(req):
     obj.telefono = escape(obj.telefono) if obj.telefono else None
     obj.contacto = escape(obj.contacto) if obj.contacto else None
     obj.email = escape(obj.email)
-
-    return obj   # ← devolvemos OBJETO, NO dict
+    return obj
 
 
 @facultad_bp.route('/facultad', methods=['POST'])
 @validate_with(FacultadMapping)
 def crear_facultad():
-    facultad_obj = sanitizar_facultad_entrada(request)
-    FacultadService.crear_facultad(facultad_obj)
-    return jsonify({"message": "Facultad creada exitosamente"}), 201
+    fac = sanitizar_facultad_entrada(request)
+    obj = FacultadService.crear_facultad(fac)
+
+    return jsonify({
+        "message": "Facultad creada exitosamente",
+        "id": current_app.hashids.encode(obj.id)
+    }), 201
 
 
 @facultad_bp.route('/facultad', methods=['GET'])
 @cache.cached(timeout=30)
 def listar_facultades():
     result = FacultadService.obtener_todas()
-    return jsonify(facultad_mapping.dump(result, many=True)), 200
+
+    salida = []
+    for obj in result:
+        data = facultad_mapping.dump(obj)
+        data["id"] = current_app.hashids.encode(obj.id)
+        salida.append(data)
+
+    return jsonify(salida), 200
 
 
-@facultad_bp.route('/facultad/<int:fid>', methods=['GET'])
-def obtener_facultad(fid):
-    obj = FacultadService.obtener_por_id(fid)
+@facultad_bp.route('/facultad/<hashid>', methods=['GET'])
+def obtener_facultad(hashid):
+    decoded = current_app.hashids.decode(hashid)
+    if not decoded:
+        return jsonify({"message": "ID inválido"}), 400
+
+    obj = FacultadService.obtener_por_id(decoded[0])
     if not obj:
         return jsonify({"message": "Facultad no encontrada"}), 404
-    return facultad_mapping.dump(obj), 200
+
+    data = facultad_mapping.dump(obj)
+    data["id"] = hashid
+
+    return jsonify(data), 200
 
 
-@facultad_bp.route('/facultad/<int:fid>', methods=['PUT'])
+@facultad_bp.route('/facultad/<hashid>', methods=['PUT'])
 @validate_with(FacultadMapping)
-def actualizar_facultad(fid):
-    facultad_obj = sanitizar_facultad_entrada(request)
-    actualizado = FacultadService.actualizar_facultad(fid, facultad_obj)
+def actualizar_facultad(hashid):
+    decoded = current_app.hashids.decode(hashid)
+    if not decoded:
+        return jsonify({"message": "ID inválido"}), 400
+
+    fac = sanitizar_facultad_entrada(request)
+    actualizado = FacultadService.actualizar_facultad(decoded[0], fac)
+
     if not actualizado:
         return jsonify({"message": "Facultad no encontrada"}), 404
+
     return jsonify({"message": "Facultad actualizada correctamente"}), 200
 
 
-@facultad_bp.route('/facultad/<int:fid>', methods=['DELETE'])
-def eliminar_facultad(fid):
-    eliminado = FacultadService.eliminar_facultad(fid)
+@facultad_bp.route('/facultad/<hashid>', methods=['DELETE'])
+def eliminar_facultad(hashid):
+    decoded = current_app.hashids.decode(hashid)
+    if not decoded:
+        return jsonify({"message": "ID inválido"}), 400
+
+    eliminado = FacultadService.eliminar_facultad(decoded[0])
     if not eliminado:
         return jsonify({"message": "Facultad no encontrada"}), 404
+
     return jsonify({"message": "Facultad eliminada"}), 200
