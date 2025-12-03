@@ -9,7 +9,7 @@ class UniversidadMapping(Schema):
 
     @post_load
     def nueva_universidad(self, data, **kwargs):
-        for key in ['nombre', 'sigla', 'tipo']:
+        for key in ['nombre', 'sigla']:
             if key in data and isinstance(data[key], str):
-                data[key] = escape(data[key])
+                data[key] = str(escape(data[key]))
         return Universidad(**data)

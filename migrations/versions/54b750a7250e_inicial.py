@@ -1,8 +1,8 @@
-"""migracion inicial
+"""Inicial
 
-Revision ID: bfef212d291e
+Revision ID: 54b750a7250e
 Revises: 
-Create Date: 2025-12-02 10:43:04.529441
+Create Date: 2025-12-03 09:53:40.189121
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'bfef212d291e'
+revision = '54b750a7250e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,12 +30,12 @@ def upgrade():
     sa.Column('abreviatura', sa.String(length=10), nullable=False),
     sa.Column('directorio', sa.String(length=100), nullable=False),
     sa.Column('sigla', sa.String(length=10), nullable=False),
+    sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('codigopostal', sa.String(length=10), nullable=True),
     sa.Column('ciudad', sa.String(length=50), nullable=True),
     sa.Column('domicilio', sa.String(length=100), nullable=True),
     sa.Column('telefono', sa.String(length=20), nullable=True),
     sa.Column('contacto', sa.String(length=100), nullable=True),
-    sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('universidad_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['universidad_id'], ['universidades.id'], ),
     sa.PrimaryKeyConstraint('id')
