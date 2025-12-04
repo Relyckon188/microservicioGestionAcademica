@@ -5,7 +5,6 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_caching import Cache
 from decouple import config as env_config
-
 from app.config import config as app_config
 from hashids import Hashids
 

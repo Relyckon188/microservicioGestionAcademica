@@ -5,11 +5,11 @@ class EspecialidadRepository:
 
     @staticmethod
     def get_all():
-        return Especialidad.query.all()
+        return db.session.query(Especialidad).all()
 
     @staticmethod
     def get_by_id(eid: int):
-        return Especialidad.query.get(eid)
+        return db.session.get(Especialidad, eid)
 
     @staticmethod
     def create(obj: Especialidad):

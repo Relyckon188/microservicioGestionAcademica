@@ -5,11 +5,11 @@ class UniversidadRepository:
 
     @staticmethod
     def get_all():
-        return Universidad.query.all()
+        return db.session.query(Universidad).all()
 
     @staticmethod
     def get_by_id(uid: int):
-        return Universidad.query.get(uid)
+        return db.session.get(Universidad, uid)
 
     @staticmethod
     def create(data: dict):

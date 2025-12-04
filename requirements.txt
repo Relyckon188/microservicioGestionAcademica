@@ -6,7 +6,7 @@ Flask-Hashids == 1.0.3
 Flask-Filter == 0.1.2a3
 Flask-Caching==2.3.1
 pytest==7.4.0
-pytest-flask==1.2.0
+# pytest-flask==1.2.0              #no lo usamos en el proyecto, nos crea conflictos
 werkzeug>=3.0.1
 SQLAlchemy==2.0.40
 sqlalchemy-filters == 0.13.0

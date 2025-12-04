@@ -1,6 +1,6 @@
 services:
     estructura:
-        image: flask-sysacad:v1.0.0
+        image: gestion_academica
         networks:
           - mired
         ports:
@@ -10,6 +10,16 @@ services:
           - SQLALCHEMY_TRACK_MODIFICATIONS=${SQLALCHEMY_TRACK_MODIFICATIONS}  
           - SQLALCHEMY_RECORD_QUERIES=${SQLALCHEMY_RECORD_QUERIES}
           - PROD_DATABASE_URI=${PROD_DATABASE_URI}
+        labels:
+          - "traefik.enable=true"
+
+          # Router
+          - "traefik.http.routers.estructura.rule=Host(`universidad.localhost`)"
+          - "traefik.http.routers.estructura.entrypoints=https"
+          - "traefik.http.routers.estructura.tls=true"
+
+          # Servicio que apunta al contenedor Flask
+          - "traefik.http.services.estructura.loadbalancer.server.port=5000"
 networks:
     mired:
         external: true

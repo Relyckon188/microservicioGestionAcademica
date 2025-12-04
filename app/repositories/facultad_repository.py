@@ -5,11 +5,11 @@ class FacultadRepository:
 
     @staticmethod
     def get_all():
-        return Facultad.query.all()
+        return db.session.query(Facultad).all()
 
     @staticmethod
     def get_by_id(fid: int):
-        return Facultad.query.get(fid)
+        return db.session.get(Facultad, fid)
 
     @staticmethod
     def create(facultad_obj):

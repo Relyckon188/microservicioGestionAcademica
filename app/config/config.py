@@ -22,12 +22,8 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_DATABASE_URI = os.getenv("DEV_DATABASE_URI")
-
-    if not SQLALCHEMY_DATABASE_URI:
-        raise ValueError("Falta DEV_DATABASE_URI en el archivo .env")
 
 
 class ProductionConfig(Config):
@@ -35,21 +31,15 @@ class ProductionConfig(Config):
     TESTING = False
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URI")
 
-    if not SQLALCHEMY_DATABASE_URI:
-        raise ValueError("Falta PROD_DATABASE_URI en el archivo .env")
-
 
 class TestConfig(Config):
     TESTING = True
     DEBUG = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("TEST_DATABASE_URI")
-
-    if not SQLALCHEMY_DATABASE_URI:
-        raise ValueError("Falta TEST_DATABASE_URI en el archivo .env")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-def factory(env: str) -> Config:
+def factory(env: str):
     config_map = {
         "development": DevelopmentConfig,
         "production": ProductionConfig,
