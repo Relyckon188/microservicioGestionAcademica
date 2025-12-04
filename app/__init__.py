@@ -14,6 +14,13 @@ hashids = Hashids(
     alphabet=env_config("HASHIDS_ALPHABET")
 )
 
+def encode_id(id_num: int) -> str:
+    return hashids.encode(id_num)
+
+def decode_id(hashid: str):
+    decoded = hashids.decode(hashid)
+    return decoded[0] if decoded else None
+
 db = SQLAlchemy()
 migrate = Migrate()
 ma = Marshmallow()
