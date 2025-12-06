@@ -13,7 +13,12 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = False
 
+    # Cache
     CACHE_TYPE = os.getenv("CACHE_TYPE", "SimpleCache")
+    CACHE_REDIS_HOST = os.getenv("CACHE_REDIS_HOST", "redis")
+    CACHE_REDIS_PORT = int(os.getenv("CACHE_REDIS_PORT", 6379))
+    CACHE_REDIS_DB = int(os.getenv("CACHE_REDIS_DB", 0))
+    CACHE_REDIS_PASSWORD = os.getenv("CACHE_REDIS_PASSWORD") or None
 
     @staticmethod
     def init_app(app):
