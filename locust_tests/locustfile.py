@@ -3,11 +3,11 @@ from locust.runners import STATE_STOPPED
 import time
 
 class SpikeUser(HttpUser):
-    wait_time = between(1, 1)  # espera mínima entre tareas, se puede ajustar
+    wait_time = between(1, 1)  # espera mínima entre tareas
 
     @task
     def post_request(self):
-        BASE_URL = "https://ecommerce.universidad.localhost"  # cambiar por tu URL
+        BASE_URL = "https://ecommerce.universidad.localhost"  # cambiar URL
 
         payload = {"producto": 1, "cantidad": 1, "entrada_salida": 1}
         headers = {"Content-Type": "application/json"}

@@ -1,10 +1,10 @@
 .venv1/
 .venv/
-.venv311/
+venv311/
 .env
 .env.local
 .vscode
 .pytest_cache
-.migrations/
-.locust_tests/
+migrations/
+locust_tests/
 __pycache__/
