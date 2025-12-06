@@ -1,6 +1,9 @@
 # SYSACAD
 
-# Proyecto-SysAcad
+Integrantes:
+- Bravo, Carolina Noelia
+- Chang Yang, Gabriela
+
 
 # Proyecto SysAcad - Microservicio de Gestión Académica
 
