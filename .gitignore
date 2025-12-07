@@ -8,3 +8,4 @@ venv311/
 migrations/
 locust_tests/
 __pycache__/
+apuntes.txt
