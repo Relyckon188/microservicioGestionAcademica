@@ -1,155 +1,165 @@
+
 # SYSACAD
 
 Integrantes:
-- Bravo, Carolina Noelia
-- Chang Yang, Gabriela
 
-
-# Proyecto SysAcad - Microservicio de Gestión Académica
-
-Este repositorio contiene el microservicio **SysAcad**, un sistema para gestión académica de universidades, levantado con **Flask** y Docker, incluyendo pruebas de carga y documentación de patrones de microservicios.
+* Bravo, Carolina Noelia
+* Chang Yang, Gabriela
 
 ---
 
-## 1️⃣ Levantar el proyecto con Docker
+# Proyecto SysAcad – Microservicio de Gestión Académica
 
-### Requisitos
+Este repositorio contiene el microservicio **SysAcad**, un sistema de gestión académica desarrollado con **Flask**, con despliegue en **Docker** y **Traefik**, incluyendo pruebas de carga y patrones de microservicios implementados dentro del proyecto.
 
-- Docker y Docker Compose instalados
-- `.env` con configuración de base de datos y Redis (no incluido en el repositorio, usar `.env.example`)
+---
 
-### Pasos para levantar
+# 1️. Levantar el proyecto con Docker
 
-1. Copiar `.env.example` a `.env` y configurar tus credenciales de PostgreSQL y Redis.
-2. Levantar los servicios:
+## Requisitos
+
+* Docker y Docker Compose
+* Archivo `.env` configurado (basado en `.env.example`)
+
+## Pasos
+
+1. Crear archivo `.env`:
+
+```bash
+cp .env.example .env
+```
+
+2. Levantar toda la infraestructura:
 
 ```bash
 docker-compose up -d --build
-````
+```
 
-3. Verificar que el microservicio funcione:
+3. Probar el microservicio:
 
 ```bash
 curl http://localhost:5000/api/v1/universidad
 ```
 
-> Debe devolver los datos de universidades desde la base de datos.
+Debe devolver los datos de universidades desde la base de datos.
 
 ---
 
-## 2️⃣ Pruebas de carga con Locust
+# 2️⃣ Pruebas de carga con Locust
 
-### Instalación
+El repositorio ya incluye una carpeta **`locust_tests/`** con:
 
-Si trabajas en Python local:
+* `locustfile.py` → script de pruebas
+* `reporte.html` → reporte HTML generado
+* `Locust.pdf` → reporte PDF exportado
 
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
-pip install locust
-```
+Por lo tanto, la configuración ya está lista para reproducir las pruebas.
 
-### Archivo de prueba (`locust_tests/locustfile.py`)
+## Ejecutar pruebas (opcional)
 
-* Simula peticiones a la URL del microservicio.
-* Ejemplo básico para GET/POST:
-
-```python
-from locust import HttpUser, task, between
-
-class SysAcadUser(HttpUser):
-    wait_time = between(1, 3)
-    
-    @task
-    def get_universidad(self):
-        self.client.get("/api/v1/universidad")
-```
-
-### Ejecutar pruebas
+Si se desea volver a correr Locust:
 
 ```bash
 locust -f locust_tests/locustfile.py --users 100 --spawn-rate 10 --run-time 40s --headless --host=http://localhost:5000 --html reporte.html
 ```
 
-* Esto genera un **reporte HTML** `reporte.html` con tiempos de respuesta, requests por segundo, errores, etc.
-* Adjuntar este reporte a la entrega.
+Esto regenerará un archivo `reporte.html` actualizado.
 
 ---
 
-## 3️⃣ Patrones de microservicios implementados
+# 3️⃣ Patrones de Microservicios Implementados
 
-### Balanceo de carga
+A continuación se detallan los patrones ya integrados en el proyecto.
 
-* Usando **Traefik** como reverse proxy en `docker-compose.yml`.
-* Distribuye peticiones entre contenedores del mismo servicio.
-* Configuración ejemplo:
+---
+
+## ✔️ 3.1 Balanceo de carga (Traefik + réplicas)
+
+Implementado en `docker-compose.yml`:
 
 ```yaml
 services:
-  web:
+  backend:
     image: sysacad:latest
     deploy:
       replicas: 3
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sysacad.rule=Host(`ecommerce.universidad.localhost`)"
+      - "traefik.http.routers.backend.rule=Host(`backend.universidad.localhost`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+```
+
+Traefik distribuye peticiones entre los contenedores del microservicio.
+
+---
+
+## ✔️ 3.2 Retry & Circuit Breaker (Traefik)
+
+Configurado mediante middlewares:
+
+```yaml
+# Retry
+- "traefik.http.middlewares.backend-retry.retry.attempts=3"
+- "traefik.http.middlewares.backend-retry.retry.initialinterval=100ms"
+
+# Circuit Breaker
+- "traefik.http.middlewares.backend-cb.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+```
+
+* **Retry** → Reintentos automáticos ante fallos temporales.
+* **Circuit Breaker** → Abre el circuito si la latencia excede 100 ms.
+
+---
+
+## ✔️ 3.3 Rate Limit (Flask-Limiter)
+
+No está configurado al proyecto, pero se puede agregar directamente el siguiente codigo al docker-compose:
+
+```yaml
+# ------------ RATE LIMIT ------------
+- "traefik.http.middlewares.backend-rl.ratelimit.average=100"
+- "traefik.http.middlewares.backend-rl.ratelimit.burst=50"
+```
+
+y tambien agregar 'backend-rl' a mi lista de middlwares:
+
+```yaml
+- "traefik.http.routers.backend.middlewares=backend-retry,backend-cb,backend-rl"
 ```
 
 ---
 
-### Retry / Circuit breaker
-
-* Patrón conceptual usando **requests + Retry**:
+## ✔️ 3.4 Caché con Redis
 
 ```python
-import requests
-from requests.adapters import HTTPAdapter, Retry
+class Config:
+    TESTING = False
+    DEBUG = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_RECORD_QUERIES = False
 
-session = requests.Session()
-retries = Retry(total=3, backoff_factor=0.5)
-session.mount("http://", HTTPAdapter(max_retries=retries))
+    # Cache
+    CACHE_TYPE = os.getenv("CACHE_TYPE", "RedisCache")
+    CACHE_REDIS_HOST = os.getenv("CACHE_REDIS_HOST", "redis")
+    CACHE_REDIS_PORT = int(os.getenv("CACHE_REDIS_PORT", 6379))
+    CACHE_REDIS_DB = int(os.getenv("CACHE_REDIS_DB", 0))
+    CACHE_REDIS_PASSWORD = os.getenv("CACHE_REDIS_PASSWORD") or None
 
-response = session.get("http://otro-servicio/api/v1/data")
+    @staticmethod
+    def init_app(app):
+        pass
 ```
-
-* Permite reintentos ante fallos temporales y reduce errores de comunicación.
 
 ---
 
-### Rate Limit
+# 5️⃣ Tecnologías
 
-* Evita sobrecarga del servicio con **Flask-Limiter**:
-
-```python
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
-limiter = Limiter(app, key_func=get_remote_address, default_limits=["100 per minute"])
-```
-
-* Limita 100 requests por minuto por cliente/IP.
+* Flask
+* PostgreSQL
+* Redis
+* Traefik
+* Docker
+* Locust
 
 ---
 
-### Cache (Redis)
-
-* Mejora rendimiento y reduce consultas a base de datos con **Flask-Caching + Redis**:
-
-```python
-from flask_caching import Cache
-
-cache = Cache(config={
-    "CACHE_TYPE": "RedisCache",
-    "CACHE_REDIS_HOST": "redis",
-    "CACHE_REDIS_PORT": 6379,
-    "CACHE_REDIS_DB": 0,
-    "CACHE_REDIS_PASSWORD": "tu_password"
-})
-cache.init_app(app)
-
-@app.route("/api/v1/universidad")
-@cache.cached(timeout=60)
-def get_universidad():
-    return jsonify(Universidad.query.all())
-```

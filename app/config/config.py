@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = False
 
-    # Cache
+    # Cache (por defecto 'SimpleCache')
     CACHE_TYPE = os.getenv("CACHE_TYPE", "SimpleCache")
     CACHE_REDIS_HOST = os.getenv("CACHE_REDIS_HOST", "redis")
     CACHE_REDIS_PORT = int(os.getenv("CACHE_REDIS_PORT", 6379))
