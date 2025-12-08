@@ -23,7 +23,7 @@ Este repositorio contiene el microservicio **SysAcad**, un sistema de gestión a
 
 ## Pasos
 
-1. Crear archivo `.env`:
+1. Crear archivo `.env`, luego modificar los datos correspondientes:
 
 ```bash
 cp .env.example .env
@@ -45,7 +45,7 @@ Debe devolver los datos de universidades desde la base de datos.
 
 ---
 
-# 2️⃣ Pruebas de carga con Locust
+# 2️. Pruebas de carga con Locust
 
 El repositorio ya incluye una carpeta **`locust_tests/`** con:
 
@@ -67,13 +67,13 @@ Esto regenerará un archivo `reporte.html` actualizado.
 
 ---
 
-# 3️⃣ Patrones de Microservicios Implementados
+# 3️. Patrones de Microservicios Implementados
 
 A continuación se detallan los patrones ya integrados en el proyecto.
 
 ---
 
-## ✔️ 3.1 Balanceo de carga (Traefik + réplicas)
+## 3.1 Balanceo de carga (Traefik + réplicas)
 
 Implementado en `docker-compose.yml`:
 
@@ -93,7 +93,7 @@ Traefik distribuye peticiones entre los contenedores del microservicio.
 
 ---
 
-## ✔️ 3.2 Retry & Circuit Breaker (Traefik)
+## 3.2 Retry & Circuit Breaker (Traefik)
 
 Configurado mediante middlewares:
 
@@ -111,9 +111,9 @@ Configurado mediante middlewares:
 
 ---
 
-## ✔️ 3.3 Rate Limit (Flask-Limiter)
+## 3.3 Rate Limit (Flask-Limiter)
 
-No está configurado al proyecto, pero se puede agregar directamente el siguiente codigo al docker-compose:
+No está configurado al proyecto, pero se puede agregar directamente el siguiente codigo al `docker-compose.yml` :
 
 ```yaml
 # ------------ RATE LIMIT ------------
@@ -129,7 +129,9 @@ y tambien agregar 'backend-rl' a mi lista de middlwares:
 
 ---
 
-## ✔️ 3.4 Caché con Redis
+## 3.4 Caché con Redis
+
+El Redis está configurado en el archivo `config.py` de la app:
 
 ```python
 class Config:
@@ -152,7 +154,7 @@ class Config:
 
 ---
 
-# 5️⃣ Tecnologías
+# 5️. Tecnologías
 
 * Flask
 * PostgreSQL
