@@ -3,7 +3,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 basedir = Path(__file__).resolve().parents[2]
-
 load_dotenv(basedir / ".env")
 
 
@@ -13,7 +12,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = False
 
-    # Cache (por defecto 'SimpleCache')
+    # Cache
     CACHE_TYPE = os.getenv("CACHE_TYPE", "SimpleCache")
     CACHE_REDIS_HOST = os.getenv("CACHE_REDIS_HOST", "redis")
     CACHE_REDIS_PORT = int(os.getenv("CACHE_REDIS_PORT", 6379))

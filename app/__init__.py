@@ -4,22 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_caching import Cache
-from decouple import config as env_config
 from app.config import config as app_config
-from hashids import Hashids
 
-hashids = Hashids(
-    salt=env_config("HASHIDS_SALT"),
-    min_length=int(env_config("HASHIDS_MIN_LENGTH")),
-    alphabet=env_config("HASHIDS_ALPHABET")
-)
-
-def encode_id(id_num: int) -> str:
-    return hashids.encode(id_num)
-
-def decode_id(hashid: str):
-    decoded = hashids.decode(hashid)
-    return decoded[0] if decoded else None
+# Eliminado Hashids: no usar hashids por compatibilidad entre microservicios
+# Si necesitás IDs públicos, usar UUID o el ID numérico directamente.
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -40,7 +28,5 @@ def create_app() -> Flask:
     from app.resources import all_blueprints
     for bp in all_blueprints:
         app.register_blueprint(bp, url_prefix="/api/v1")
-
-    app.hashids = hashids
-
+        
     return app

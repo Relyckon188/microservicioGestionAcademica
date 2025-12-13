@@ -1,5 +1,6 @@
 venv/
 venv1/
+venv311/
 __pycache__/
 *.pyc
 .git
@@ -9,3 +10,7 @@ __pycache__/
 *.sqlite
 .idea/
 .vscode/
+.env.local
+.pytest_cache
+**/apuntes.txt
+**/apuntes.md

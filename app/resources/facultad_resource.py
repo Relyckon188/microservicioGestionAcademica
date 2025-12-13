@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request, current_app
+from flask import jsonify, Blueprint, request
 from markupsafe import escape
 from app.mapping import FacultadMapping
 from app.services.facultad_service import FacultadService
@@ -10,17 +10,20 @@ facultad_mapping = FacultadMapping()
 
 
 def sanitizar_facultad_entrada(req):
-    obj = facultad_mapping.load(req.get_json())
-    obj.nombre = escape(obj.nombre)
-    obj.abreviatura = escape(obj.abreviatura)
-    obj.directorio = escape(obj.directorio)
-    obj.sigla = escape(obj.sigla)
-    obj.ciudad = escape(obj.ciudad) if obj.ciudad else None
-    obj.domicilio = escape(obj.domicilio) if obj.domicilio else None
-    obj.telefono = escape(obj.telefono) if obj.telefono else None
-    obj.contacto = escape(obj.contacto) if obj.contacto else None
-    obj.email = escape(obj.email)
-    return obj
+    data = facultad_mapping.load(req.get_json())
+
+    data.nombre = escape(data.nombre)
+    data.abreviatura = escape(data.abreviatura)
+    data.directorio = escape(data.directorio)
+    data.sigla = escape(data.sigla)
+
+    data.ciudad = escape(data.ciudad) if data.ciudad else None
+    data.domicilio = escape(data.domicilio) if data.domicilio else None
+    data.telefono = escape(data.telefono) if data.telefono else None
+    data.contacto = escape(data.contacto) if data.contacto else None
+    data.email = escape(data.email) if data.email else None
+
+    return data
 
 
 @facultad_bp.route('/facultad', methods=['POST'])
@@ -29,9 +32,12 @@ def crear_facultad():
     fac = sanitizar_facultad_entrada(request)
     obj = FacultadService.crear_facultad(fac)
 
+    # Limpiar cache de listado
+    cache.delete_memoized(listar_facultades)
+
     return jsonify({
         "message": "Facultad creada exitosamente",
-        "id": current_app.hashids.encode(obj.id)
+        "id": obj.id
     }), 201
 
 
@@ -39,56 +45,39 @@ def crear_facultad():
 @cache.cached(timeout=30)
 def listar_facultades():
     result = FacultadService.obtener_todas()
-
-    salida = []
-    for obj in result:
-        data = facultad_mapping.dump(obj)
-        data["id"] = current_app.hashids.encode(obj.id)
-        salida.append(data)
-
+    salida = [facultad_mapping.dump(obj) for obj in result]
     return jsonify(salida), 200
 
 
-@facultad_bp.route('/facultad/<hashid>', methods=['GET'])
-def obtener_facultad(hashid):
-    decoded = current_app.hashids.decode(hashid)
-    if not decoded:
-        return jsonify({"message": "ID inválido"}), 400
-
-    obj = FacultadService.obtener_por_id(decoded[0])
+@facultad_bp.route('/facultad/<int:fid>', methods=['GET'])
+def obtener_facultad(fid):
+    obj = FacultadService.obtener_por_id(fid)
     if not obj:
         return jsonify({"message": "Facultad no encontrada"}), 404
 
     data = facultad_mapping.dump(obj)
-    data["id"] = hashid
-
     return jsonify(data), 200
 
 
-@facultad_bp.route('/facultad/<hashid>', methods=['PUT'])
+@facultad_bp.route('/facultad/<int:fid>', methods=['PUT'])
 @validate_with(FacultadMapping)
-def actualizar_facultad(hashid):
-    decoded = current_app.hashids.decode(hashid)
-    if not decoded:
-        return jsonify({"message": "ID inválido"}), 400
-
+def actualizar_facultad(fid):
     fac = sanitizar_facultad_entrada(request)
-    actualizado = FacultadService.actualizar_facultad(decoded[0], fac)
+    actualizado = FacultadService.actualizar_facultad(fid, fac)
 
     if not actualizado:
         return jsonify({"message": "Facultad no encontrada"}), 404
 
+    cache.delete_memoized(listar_facultades)
     return jsonify({"message": "Facultad actualizada correctamente"}), 200
 
 
-@facultad_bp.route('/facultad/<hashid>', methods=['DELETE'])
-def eliminar_facultad(hashid):
-    decoded = current_app.hashids.decode(hashid)
-    if not decoded:
-        return jsonify({"message": "ID inválido"}), 400
+@facultad_bp.route('/facultad/<int:fid>', methods=['DELETE'])
+def eliminar_facultad(fid):
+    eliminado = FacultadService.eliminar_facultad(fid)
 
-    eliminado = FacultadService.eliminar_facultad(decoded[0])
     if not eliminado:
         return jsonify({"message": "Facultad no encontrada"}), 404
 
+    cache.delete_memoized(listar_facultades)
     return jsonify({"message": "Facultad eliminada"}), 200

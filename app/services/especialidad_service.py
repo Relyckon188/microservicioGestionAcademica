@@ -9,6 +9,9 @@ class EspecialidadService:
 
     @staticmethod
     def obtener_por_id(eid: int):
+        # Verificar si existe en cache el objeto por id
+        # si existe no ir a la BD
+        # sino traer de la BD y guardar en cache
         return EspecialidadRepository.get_by_id(eid)
 
     @staticmethod

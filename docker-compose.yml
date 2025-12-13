@@ -1,49 +1,62 @@
+version: "3.9"
+
 services:
   flask:
-    build: .
-    image: gestion_academica
-    container_name: flask-sysacad
+    image: gestion_academica:1.0
     restart: always
     networks:
       - mired
-    ports:
-      - "5000:5000"
     env_file:
       - .env
     environment:
-      # Flask
       - FLASK_CONTEXT=production
-      # SQLAlchemy
       - SQLALCHEMY_TRACK_MODIFICATIONS=${SQLALCHEMY_TRACK_MODIFICATIONS}
       - SQLALCHEMY_RECORD_QUERIES=${SQLALCHEMY_RECORD_QUERIES}
       - PROD_DATABASE_URI=${PROD_DATABASE_URI}
-      # Redis Cache
       - CACHE_TYPE=${CACHE_TYPE}
       - CACHE_REDIS_HOST=${CACHE_REDIS_HOST}
       - CACHE_REDIS_PORT=${CACHE_REDIS_PORT}
       - CACHE_REDIS_DB=${CACHE_REDIS_DB}
-      - CACHE_REDIS_PASSWORD=${CACHE_REDIS_PASSWORD}
-      # Hashids
-      - HASHIDS_MIN_LENGTH=${HASHIDS_MIN_LENGTH}
-      - HASHIDS_ALPHABET=${HASHIDS_ALPHABET}
-      - HASHIDS_SALT=${HASHIDS_SALT}
-      # Seguridad
       - SECRET_KEY=${SECRET_KEY}
     labels:
       - "traefik.enable=true"
-      # ROUTER 
-      - "traefik.http.routers.backend.rule=Host(`backend.universidad.localhost`)"
-      - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.entrypoints=https"
-      - "traefik.http.routers.backend.middlewares=backend-retry,backend-cb"
-      # SERVICE 
-      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+      - "traefik.http.routers.flask.rule=Host(`backend.universidad.localhost`)"
+      - "traefik.http.routers.flask.tls=true"
+      - "traefik.http.routers.flask.entrypoints=https"
+      - "traefik.http.routers.flask.middlewares=flask-retry,flask-cb"
+      - "traefik.http.services.flask.loadbalancer.server.port=5000"
       - "traefik.docker.network=mired"
-      # RETRY 
-      - "traefik.http.middlewares.backend-retry.retry.attempts=3"
-      - "traefik.http.middlewares.backend-retry.retry.initialinterval=100ms"
-      # CIRCUIT BREAKER
-      - "traefik.http.middlewares.backend-cb.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+      - "traefik.http.middlewares.flask-retry.retry.attempts=3"
+      - "traefik.http.middlewares.flask-retry.retry.initialinterval=100ms"
+      - "traefik.http.middlewares.flask-cb.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - mired
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Inicializar DEV/TEST/PROD
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:7
+    networks:
+      - mired
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6380:6379"
+
 networks:
   mired:
     external: true
+
+volumes:
+  pgdata:
+  redisdata:

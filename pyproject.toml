@@ -1,0 +1,34 @@
+[project]
+name = "gestion-academica"
+version = "1.0.0"
+description = "Sistema de gestion academica"
+requires-python = ">=3.10"
+
+dependencies = [
+    "Flask==3.1.0",
+    "flask-marshmallow==0.15.0",
+    "Flask-SQLAlchemy==3.1.1",
+    "Flask-Migrate==4.1.0",
+    "Flask-Filter==0.1.2a3",
+    "Flask-Caching==2.3.1",
+    "pytest==7.4.0",
+    "werkzeug>=3.0.1",
+    "SQLAlchemy==2.0.40",
+    "sqlalchemy-filters==0.13.0",
+    "psycopg2-binary==2.9.10",
+    "python-dotenv==1.1.0",
+    "python-odt-template==0.5.1",
+    "python-decouple==3.8",
+    "marshmallow==3.19.0",
+    "marshmallow-sqlalchemy==1.4.2",
+    "markupsafe==3.0.2",
+    "redis==5.0.1",
+    "gunicorn==20.1.0",
+]
+
+[build-system]
+requires = ["uv.build", "setuptools>=65.5.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv.extra-build-dependencies]
+gestion-academica = ["uv.build"]

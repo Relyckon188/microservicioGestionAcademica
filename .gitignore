@@ -9,3 +9,4 @@ migrations/
 locust_tests/
 __pycache__/
 **/apuntes.txt
+**/apuntes.md

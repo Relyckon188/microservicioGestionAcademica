@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request, current_app
+from flask import jsonify, Blueprint, request
 from markupsafe import escape
 from app.mapping import UniversidadMapping
 from app.services.universidad_service import UniversidadService
@@ -10,9 +10,9 @@ universidad_mapping = UniversidadMapping()
 
 
 def sanitizar_universidad_entrada(req):
-    data = req.get_json()
-    data["nombre"] = escape(data["nombre"])
-    data["sigla"] = escape(data["sigla"])
+    data = universidad_mapping.load(req.get_json())
+    data.nombre = escape(data.nombre)
+    data.sigla = escape(data.sigla)
     return data
 
 
@@ -22,9 +22,11 @@ def crear_universidad():
     data = sanitizar_universidad_entrada(request)
     obj = UniversidadService.crear_universidad(data)
 
+    cache.delete_memoized(listar_universidades)
+
     return jsonify({
         "message": "Universidad creada exitosamente",
-        "id": current_app.hashids.encode(obj.id)
+        "id": obj.id
     }), 201
 
 
@@ -32,57 +34,40 @@ def crear_universidad():
 @cache.cached(timeout=30)
 def listar_universidades():
     result = UniversidadService.obtener_todas()
-
-    salida = []
-    for obj in result:
-        data = universidad_mapping.dump(obj)
-        data["id"] = current_app.hashids.encode(obj.id)
-        salida.append(data)
-
+    salida = [universidad_mapping.dump(obj) for obj in result]
     return jsonify(salida), 200
 
 
-@universidad_bp.route('/universidad/<hashid>', methods=['GET'])
-def obtener_universidad(hashid):
-    decoded = current_app.hashids.decode(hashid)
-    if not decoded:
-        return jsonify({"message": "ID inválido"}), 400
+@universidad_bp.route('/universidad/<int:uid>', methods=['GET'])
+def obtener_universidad(uid):
+    obj = UniversidadService.obtener_por_id(uid)
 
-    obj = UniversidadService.obtener_por_id(decoded[0])
     if not obj:
         return jsonify({"message": "Universidad no encontrada"}), 404
 
     data = universidad_mapping.dump(obj)
-    data["id"] = hashid
-
     return jsonify(data), 200
 
 
-@universidad_bp.route('/universidad/<hashid>', methods=['PUT'])
+@universidad_bp.route('/universidad/<int:uid>', methods=['PUT'])
 @validate_with(UniversidadMapping)
-def actualizar_universidad(hashid):
-    decoded = current_app.hashids.decode(hashid)
-    if not decoded:
-        return jsonify({"message": "ID inválido"}), 400
-
+def actualizar_universidad(uid):
     data = sanitizar_universidad_entrada(request)
-    actualizado = UniversidadService.actualizar_universidad(decoded[0], data)
+    actualizado = UniversidadService.actualizar_universidad(uid, data)
 
     if not actualizado:
         return jsonify({"message": "Universidad no encontrada"}), 404
 
+    cache.delete_memoized(listar_universidades)
     return jsonify({"message": "Universidad actualizada correctamente"}), 200
 
 
-@universidad_bp.route('/universidad/<hashid>', methods=['DELETE'])
-def eliminar_universidad(hashid):
-    decoded = current_app.hashids.decode(hashid)
-    if not decoded:
-        return jsonify({"message": "ID inválido"}), 400
-
-    eliminado = UniversidadService.eliminar_universidad(decoded[0])
+@universidad_bp.route('/universidad/<int:uid>', methods=['DELETE'])
+def eliminar_universidad(uid):
+    eliminado = UniversidadService.eliminar_universidad(uid)
 
     if not eliminado:
         return jsonify({"message": "Universidad no encontrada"}), 404
 
+    cache.delete_memoized(listar_universidades)
     return jsonify({"message": "Universidad eliminada"}), 200
