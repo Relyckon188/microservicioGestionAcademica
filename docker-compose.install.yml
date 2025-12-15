@@ -1,0 +1,6 @@
+services:
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gestion_academica:1.0
