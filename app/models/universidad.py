@@ -11,3 +11,11 @@ class Universidad(db.Model):
 
     # Relaciones
     facultades = db.relationship("Facultad", back_populates="universidad", lazy=True)
+    
+    def to_dict_simple(self):
+        """Serialización básica"""
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "sigla": self.sigla
+        }

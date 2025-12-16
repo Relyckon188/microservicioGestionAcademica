@@ -2,6 +2,9 @@ from locust import HttpUser, task, between
 from locust.runners import STATE_STOPPED
 import time
 
+# probar velocidad de get
+
+
 class SpikeUser(HttpUser):
     wait_time = between(1, 1)  # espera mínima entre tareas
 

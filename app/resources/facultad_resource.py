@@ -3,7 +3,6 @@ from markupsafe import escape
 from app.mapping import FacultadMapping
 from app.services.facultad_service import FacultadService
 from app.validators import validate_with
-from app import cache
 
 facultad_bp = Blueprint('facultad', __name__)
 facultad_mapping = FacultadMapping()
@@ -29,24 +28,28 @@ def sanitizar_facultad_entrada(req):
 @facultad_bp.route('/facultad', methods=['POST'])
 @validate_with(FacultadMapping)
 def crear_facultad():
-    fac = sanitizar_facultad_entrada(request)
-    obj = FacultadService.crear_facultad(fac)
-
-    # Limpiar cache de listado
-    cache.delete_memoized(listar_facultades)
-
-    return jsonify({
-        "message": "Facultad creada exitosamente",
-        "id": obj.id
-    }), 201
+    try:
+        fac = sanitizar_facultad_entrada(request)
+        obj = FacultadService.crear_facultad(fac)
+        
+        return jsonify({
+            "message": "Facultad creada exitosamente",
+            "data": obj.to_dict_simple()
+        }), 201
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "Error interno del servidor"}), 500
 
 
 @facultad_bp.route('/facultad', methods=['GET'])
-@cache.cached(timeout=30)
 def listar_facultades():
-    result = FacultadService.obtener_todas()
-    salida = [facultad_mapping.dump(obj) for obj in result]
-    return jsonify(salida), 200
+    try:
+        result = FacultadService.obtener_todas()
+        salida = facultad_mapping.dump(result, many=True)
+        return jsonify(salida), 200
+    except Exception as e:
+        return jsonify({"message": "Error interno del servidor"}), 500
 
 
 @facultad_bp.route('/facultad/<int:fid>', methods=['GET'])
@@ -62,14 +65,21 @@ def obtener_facultad(fid):
 @facultad_bp.route('/facultad/<int:fid>', methods=['PUT'])
 @validate_with(FacultadMapping)
 def actualizar_facultad(fid):
-    fac = sanitizar_facultad_entrada(request)
-    actualizado = FacultadService.actualizar_facultad(fid, fac)
+    try:
+        fac = sanitizar_facultad_entrada(request)
+        actualizado = FacultadService.actualizar_facultad(fid, fac)
 
-    if not actualizado:
-        return jsonify({"message": "Facultad no encontrada"}), 404
+        if not actualizado:
+            return jsonify({"message": "Facultad no encontrada"}), 404
 
-    cache.delete_memoized(listar_facultades)
-    return jsonify({"message": "Facultad actualizada correctamente"}), 200
+        return jsonify({
+            "message": "Facultad actualizada correctamente",
+            "data": actualizado.to_dict_simple()
+        }), 200
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "Error interno del servidor"}), 500
 
 
 @facultad_bp.route('/facultad/<int:fid>', methods=['DELETE'])
@@ -79,5 +89,7 @@ def eliminar_facultad(fid):
     if not eliminado:
         return jsonify({"message": "Facultad no encontrada"}), 404
 
-    cache.delete_memoized(listar_facultades)
-    return jsonify({"message": "Facultad eliminada"}), 200
+    return jsonify({
+        "message": "Facultad eliminada",
+        "data": eliminado.to_dict_simple()
+    }), 200

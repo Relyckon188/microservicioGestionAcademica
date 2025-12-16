@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request, current_app
+from flask import jsonify, Blueprint, request
 from markupsafe import escape
 from app.mapping import EspecialidadMapping
 from app.services.especialidad_service import EspecialidadService
@@ -20,47 +20,36 @@ def sanitizar_especialidad_entrada(req):
 @validate_with(EspecialidadMapping)
 def crear_especialidad():
     esp = sanitizar_especialidad_entrada(request)
-    especialidad = EspecialidadService.crear_especialidad(esp)
-
-    # devolver id numerico (no hashid)
-    return jsonify({
-        "message": "Especialidad creada exitosamente",
-        "data": {
-            "id": especialidad.id,
-            "especialidad": especialidad.nombre,
-            "facultad": especialidad.facultad.nombre,
-            "universidad": especialidad.facultad.universidad.nombre
-        }
-    }), 201
+    
+    try:
+        especialidad = EspecialidadService.crear_especialidad(esp)
+        return jsonify({
+            "message": "Especialidad creada exitosamente",
+            "data": especialidad.to_dict_simple()
+        }), 201
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "Error interno del servidor"}), 500
 
 
 @especialidad_bp.route('/especialidad', methods=['GET'])
 def listar_especialidades():
-    result = EspecialidadService.obtener_todas()
-
-    salida = especialidad_mapping.dump(result, many=True)
-    
-    return jsonify(salida), 200
+    try:
+        result = EspecialidadService.obtener_todas()
+        salida = especialidad_mapping.dump(result, many=True)
+        return jsonify(salida), 200
+    except Exception as e:
+        return jsonify({"message": "Error interno del servidor"}), 500
 
 
 @especialidad_bp.route('/especialidad/<int:eid>', methods=['GET'])
 def obtener_especialidad(eid):
-    #aplicar cache por id
-    cache_key = key = f"especilidad_{eid}"
-    cached = current_app.extensions['cache'].get(cache_key)
-    if cached:
-        return jsonify({cached}), 200
-
     obj = EspecialidadService.obtener_por_id(eid)
     if not obj:
         return jsonify({"message": "Especialidad no encontrada"}), 404
 
     data = especialidad_mapping.dump(obj)
-    data["id"] = obj.id
-
-    # guardar en cache (timeout 60 seg)
-    current_app.extensions['cache'].set(cache_key, data, timeout=60)
-    
     return jsonify(data), 200
 
 
@@ -68,16 +57,16 @@ def obtener_especialidad(eid):
 @validate_with(EspecialidadMapping)
 def actualizar_especialidad(eid):
     esp = sanitizar_especialidad_entrada(request)
-    actualizado = EspecialidadService.actualizar_especialidaddes(eid, esp)
+    actualizado = EspecialidadService.actualizar_especialidad(eid, esp)
     
     if not actualizado:
         return jsonify({"message": "Especialidad no encontrada"}), 404
 
-    cache_key = f"especialidad_{eid}"
-    current_app.extensions1['cache'].delete(cache_key)
-
-    return jsonify({"message": "Especialidad actualizada correctamente"}), 200
-
+    return jsonify({
+        "message": "Especialidad actualizada correctamente",
+        "data": actualizado.to_dict_simple()
+    }), 200
+    
 
 @especialidad_bp.route('/especialidad/<int:eid>', methods=['DELETE'])
 def eliminar_especialidad(eid):
@@ -85,9 +74,8 @@ def eliminar_especialidad(eid):
 
     if not eliminado:
         return jsonify({"message": "Especialidad no encontrada"}), 404
-    
-    # invalidar cache
-    cache_key = f"especialidad_{eid}"
-    current_app.extensions['cache'].delete(cache_key)
 
-    return jsonify({"message": "Especialidad eliminada"}), 200
+    return jsonify({
+        "message": "Especialidad eliminada",
+        "data": eliminado.to_dict_simple()
+    }), 200

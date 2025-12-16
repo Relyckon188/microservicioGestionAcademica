@@ -4,7 +4,6 @@
 # Convertir formato Windows → Unix:     sed -i 's/\r$//' install.sh
 # Da permisos al script:                chmod +x install.sh
 # Ejecuta:                             ./install.sh
-# si hay error en sql:                  sed -i 's/\r$//' init.sql
 
 set -e  # detener si algo falla
 

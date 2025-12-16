@@ -6,9 +6,6 @@ from flask_marshmallow import Marshmallow
 from flask_caching import Cache
 from app.config import config as app_config
 
-# Eliminado Hashids: no usar hashids por compatibilidad entre microservicios
-# Si necesitás IDs públicos, usar UUID o el ID numérico directamente.
-
 db = SQLAlchemy()
 migrate = Migrate()
 ma = Marshmallow()
