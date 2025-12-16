@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   flask:
     image: gestion_academica:1.0
@@ -40,7 +38,6 @@ services:
       - mired
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Inicializar DEV/TEST/PROD
     ports:
       - "5433:5432"
 
