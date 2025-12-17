@@ -1,9 +1,4 @@
-#!/bin/bash
 
-# ejecutar solo una vez en Git Bash: 
-# Convertir formato Windows → Unix:     sed -i 's/\r$//' install.sh
-# Da permisos al script:                chmod +x install.sh
-# Ejecuta:                             ./install.sh
 
 set -e  # detener si algo falla
 
